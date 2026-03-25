@@ -36,4 +36,18 @@ export const authMiddleware = async (req, res, next) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+//get current users
+export const getCurrenrUser = async (req, res) => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ message: "Not authenticated" });
+            return;
+        }
+        res.status(201).json({ user: req.user });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
 //# sourceMappingURL=auth.middleware.js.map

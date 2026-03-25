@@ -103,5 +103,4 @@ export const logout = async (req, res) => {
         return;
     }
 };
-//checkme
 //# sourceMappingURL=auth.controller.js.map
