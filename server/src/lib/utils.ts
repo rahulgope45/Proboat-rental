@@ -5,12 +5,12 @@ import jwt from 'jsonwebtoken'
 interface JWTPAYlOAD {
     id: number
 }
-export const genrateToken = async (payload:JWTPAYlOAD,res:Response) =>{
+export const genrateToken = async (id:number,res:Response) =>{
     if(!process.env.JWT_SECRET){
         throw new Error("JWT_SECRET is not defined")
     };
 
-    // const payload =  id
+    const payload: JWTPAYlOAD ={id}
     const token = jwt.sign(payload,process.env.JWT_SECRET,{
         expiresIn: "2d"
     });

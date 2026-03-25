@@ -10,6 +10,7 @@ interface User {
     profilepic:string;
 }
 
+
 //Signup contoller
 export const signup = async (req:Request,res:Response):Promise<void> => {
 
@@ -17,10 +18,12 @@ export const signup = async (req:Request,res:Response):Promise<void> => {
         const {username,email,password,profilepic} = req.body as User
         if(!username || !email || !password){
             res.status(401).json({message:"Please Enter All The Credentials"})
+            return;
         }
 
         if(password.length < 6){
             res.status(401).json({message:"Please Enter A Password with more than 6 digit"})
+            return
         }
 
         //checking user exists or not
@@ -33,6 +36,7 @@ export const signup = async (req:Request,res:Response):Promise<void> => {
 
         if(user){
             res.status(401).json({message:"User already exists"});
+            return
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -51,18 +55,66 @@ export const signup = async (req:Request,res:Response):Promise<void> => {
             res.status(201).json({
                 message: "User created successfully"
             })
+            return;
         }
     } catch (error) {
         console.log(error)
         res.status(501).json({
                 message: "Internal Server Error"
             })
+            return;
     }
-
 }
 
 
 //Login controller
+
+export const login =async (req:Request,res:Response):Promise<void> =>{
+  try {
+    const {email,password} = req.body as Pick<User, "email" | "password">;
+
+    if(!email || !password){
+        res.status(401).json({message: "Enter All The Credentials"})
+        return
+    }
+
+    //Checking User exists or not
+    const user = await prisma.users.findUnique({
+        where: {
+            email : email
+        }
+    });
+
+    if(!user){
+        res.status(401).json({message: "Invalid email"})
+        return;
+    }
+
+    const checkPassword = await bcrypt.compare(password, user.password)
+
+    if(!checkPassword){
+        res.status(401).json({message: "Invalid Password"})
+    }
+    genrateToken(user.id,res)
+    res.status(201).json({
+        id:user.id,
+        username:user.username,
+        email:user.email,
+        profilepic:user.profilepic,
+        createdat:user.created_at,
+        updatedat:user.updated_at
+    })
+    return;
+  } catch (error) {
+    console.log(error)
+        res.status(501).json({
+                message: "Internal Server Error"
+            })
+            return;
+  }
+}
+
+
 
 //Logout controller
 

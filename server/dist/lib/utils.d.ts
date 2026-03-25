@@ -1,7 +1,3 @@
 import type { Response } from 'express';
-interface JWTPAYlOAD {
-    id: number;
-}
-export declare const genrateToken: (payload: JWTPAYlOAD, res: Response) => Promise<void>;
-export {};
+export declare const genrateToken: (id: number, res: Response) => Promise<void>;
 //# sourceMappingURL=utils.d.ts.map

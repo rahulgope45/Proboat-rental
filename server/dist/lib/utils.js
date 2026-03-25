@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
-export const genrateToken = async (payload, res) => {
+export const genrateToken = async (id, res) => {
     if (!process.env.JWT_SECRET) {
         throw new Error("JWT_SECRET is not defined");
     }
     ;
-    // const payload =  id
+    const payload = { id };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "2d"
     });
