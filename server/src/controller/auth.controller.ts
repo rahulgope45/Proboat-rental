@@ -118,5 +118,18 @@ export const login =async (req:Request,res:Response):Promise<void> =>{
 
 //Logout controller
 
+export const logout = async (req:Request,res:Response):Promise<void>=> {
+ try {
+    res.cookie("jwt", "",{maxAge:0});
+    res.status(201).json({message: "Logout successfull"})
+ } catch (error) {
+    console.log(error)
+        res.status(501).json({
+                message: "Internal Server Error"
+            })
+            return;
+ }
+}
+
 //checkme
 
