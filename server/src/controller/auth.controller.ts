@@ -1,58 +1,67 @@
-import {prisma} from '../lib/prisma.js';
+import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import { genrateToken } from '../lib/utils.js';
 import type { Request, Response } from 'express';
 
 interface User {
-    username : string;
+    username: string;
     email: string;
     password: string;
-    profilepic:string;
+    profilepic: string;
 }
 
 
 //Signup contoller
-export const signup = async (req:Request,res:Response):Promise<void> => {
+export const signup = async (req: Request, res: Response): Promise<void> => {
 
     try {
-        const {username,email,password,profilepic} = req.body as User
-        if(!username || !email || !password){
-            res.status(401).json({message:"Please Enter All The Credentials"})
+        const { username, email, password, profilepic } = req.body as User
+        if (!username || !email || !password) {
+            res.status(401).json({ message: "Please Enter All The Credentials" })
             return;
         }
 
-        if(password.length < 6){
-            res.status(401).json({message:"Please Enter A Password with more than 6 digit"})
+        if (password.length < 6) {
+            res.status(401).json({ message: "Please Enter A Password with more than 6 digit" })
             return
         }
 
         //checking user exists or not
 
         const user = await prisma.users.findUnique({
-            where:{
+            where: {
                 email: email
             }
         })
 
-        if(user){
-            res.status(401).json({message:"User already exists"});
+        if (user) {
+            res.status(401).json({ message: "User already exists" });
             return
         }
 
         const salt = await bcrypt.genSalt(10);
-        const hashedpassword = await bcrypt.hash(password,salt);
+        const hashedpassword = await bcrypt.hash(password, salt);
 
         const newuser = await prisma.users.create({
             data: {
                 username,
                 email,
-                password:hashedpassword,
+                password: hashedpassword,
                 profilepic
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                created_at: true,
+                updated_at: true
+
             }
         })
 
-        if(newuser){
+        if (newuser) {
             res.status(201).json({
+                newuser,
                 message: "User created successfully"
             })
             return;
@@ -60,75 +69,75 @@ export const signup = async (req:Request,res:Response):Promise<void> => {
     } catch (error) {
         console.log(error)
         res.status(501).json({
-                message: "Internal Server Error"
-            })
-            return;
+            message: "Internal Server Error"
+        })
+        return;
     }
 }
 
 
 //Login controller
 
-export const login =async (req:Request,res:Response):Promise<void> =>{
-  try {
-    const {email,password} = req.body as Pick<User, "email" | "password">;
+export const login = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email, password } = req.body as Pick<User, "email" | "password">;
 
-    if(!email || !password){
-        res.status(401).json({message: "Enter All The Credentials"})
-        return
-    }
-
-    //Checking User exists or not
-    const user = await prisma.users.findUnique({
-        where: {
-            email : email
+        if (!email || !password) {
+            res.status(401).json({ message: "Enter All The Credentials" })
+            return
         }
-    });
 
-    if(!user){
-        res.status(401).json({message: "Invalid email"})
+        //Checking User exists or not
+        const user = await prisma.users.findUnique({
+            where: {
+                email: email
+            }
+        });
+
+        if (!user) {
+            res.status(401).json({ message: "Invalid email" })
+            return;
+        }
+
+        const checkPassword = await bcrypt.compare(password, user.password)
+
+        if (!checkPassword) {
+            res.status(401).json({ message: "Invalid Password" })
+        }
+        genrateToken(user.id, res)
+        res.status(201).json({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            profilepic: user.profilepic,
+            createdat: user.created_at,
+            updatedat: user.updated_at
+        })
+        return;
+    } catch (error) {
+        console.log(error)
+        res.status(501).json({
+            message: "Internal Server Error"
+        })
         return;
     }
-
-    const checkPassword = await bcrypt.compare(password, user.password)
-
-    if(!checkPassword){
-        res.status(401).json({message: "Invalid Password"})
-    }
-    genrateToken(user.id,res)
-    res.status(201).json({
-        id:user.id,
-        username:user.username,
-        email:user.email,
-        profilepic:user.profilepic,
-        createdat:user.created_at,
-        updatedat:user.updated_at
-    })
-    return;
-  } catch (error) {
-    console.log(error)
-        res.status(501).json({
-                message: "Internal Server Error"
-            })
-            return;
-  }
 }
 
 
 
 //Logout controller
 
-export const logout = async (req:Request,res:Response):Promise<void>=> {
- try {
-    res.cookie("jwt", "",{maxAge:0});
-    res.status(201).json({message: "Logout successfull"})
- } catch (error) {
-    console.log(error)
+export const logout = async (req: Request, res: Response): Promise<void> => {
+    try {
+        res.cookie("jwt", "", { maxAge: 0 });
+        res.status(201).json({ message: "Logout successfull" })
+    } catch (error) {
+        console.log(error)
         res.status(501).json({
-                message: "Internal Server Error"
-            })
-            return;
- }
+            message: "Internal Server Error"
+        })
+        return;
+    }
 }
 
 
