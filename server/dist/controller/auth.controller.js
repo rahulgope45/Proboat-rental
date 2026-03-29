@@ -31,10 +31,18 @@ export const signup = async (req, res) => {
                 email,
                 password: hashedpassword,
                 profilepic
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                created_at: true,
+                updated_at: true
             }
         });
         if (newuser) {
             res.status(201).json({
+                newuser,
                 message: "User created successfully"
             });
             return;
