@@ -1,8 +1,10 @@
 import type { NextFunction, Request, Response } from 'express'
 import { prisma } from '../lib/prisma.js'
 import jwt from 'jsonwebtoken'
+import type { JwtPayload } from 'jsonwebtoken'
 
-interface MyJwtPayload {
+
+interface MyJwtPayload extends JwtPayload {
     user: {
         id: number
     }
@@ -21,32 +23,35 @@ export const authMiddleware = async (
 
     try {
 
-        const authHeaders = req.headers.authorization
-        if (!authHeaders || !authHeaders.startsWith("Bearer")) {
-            return res.status(401).json({
-                message: "No token provided"
-            })
+        let token: string | undefined;
+
+        const authHeaders = req.headers.authorization;
+        if (authHeaders?.startsWith("Bearer ")) {
+            token = authHeaders.split(" ")[1];
         }
 
-        const token = authHeaders.split(" ")[1];
-        if (!token) {
-            return res.status(401).json({ message: "Failed to decode" })
+        
+        if (!token && req.cookies?.jwt) {
+            token = req.cookies.jwt;
         }
-        if (!process.env.SECRET_KEY) {
+        if (!token) {
+            return res.status(401).json({ message: "No tokens provided" });
+        }
+        if (!process.env.JWT_SECRET) {
             throw new Error("JWT secret key is not defined")
         }
-        const secret = process.env.SECRET_KEY;
+        const secret = process.env.JWT_SECRET;
 
-        const decoded = jwt.verify(token, secret) as MyJwtPayload;
+        const decoded = jwt.verify(token, secret) as {id : number};
         if (!decoded) {
             {
-                return res.send(401).json({ message: "Failed to decode" });
+                return res.status(401).json({ message: "Failed to decode" });
             }
         }
 
         const user = await prisma.users.findUnique({
-            where: { id: decoded.user.id },
-            select: { id: true, email: true, password: true }
+            where: { id: decoded.id },
+            select: { id: true, email: true ,username:true,created_at:true,updated_at:true }
         })
         if (!user) return res.status(401).json({ message: "User not found" });
 
