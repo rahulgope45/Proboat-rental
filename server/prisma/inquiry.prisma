@@ -1,0 +1,46 @@
+//Model Inquiry 
+
+model Inquiry {
+    id         Int      @id @default(autoincrement())
+    property   Property @relation(fields: [propertyId], references: [id])
+    propertyId Int
+
+    //Inquirer
+
+    userId Int
+    name   String
+    email  String
+    phone  String
+
+    //Messages
+    message String @db.VarChar(1000)
+
+    inquiryType InquiryType
+    status      InquiryStatus
+
+    OwnerMessage String?
+    respondedAt  DateTime?
+
+    //Preffered schedule 
+    preferredDate DateTime?
+    preferredTime String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    //Indexing
+    @@index([propertyId, userId, status])
+}
+
+//Enums
+enum InquiryType {
+    visit
+    info
+    general
+}
+
+enum InquiryStatus {
+    pending
+    contacted
+    closed
+}

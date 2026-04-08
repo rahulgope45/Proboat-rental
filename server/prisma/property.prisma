@@ -34,16 +34,16 @@ model Property {
     owner   Owner   @relation(fields: [ownerId], references: [id])
     ownerId Int
 
+    //Relation of Review
+    reviews Review[]
+    //Relation of Inquiry
+    inquiry Inquiry[]
 
     //Indexes
 
     @@index([price])
-    @@index([city,state])
-    @@index([propertyType,listingType])
-
-    //Relation of Review
-    reviews Review[]
-    
+    @@index([city, state])
+    @@index([propertyType, listingType])
 }
 
 //Enums
@@ -109,12 +109,12 @@ model Image {
 
 //Owner Model
 model Owner {
-    id Int @id @default(autoincrement())
+    id     Int       @id @default(autoincrement())
     userId Int
-    name String?
-    phone String
-    email String?
-    type OwnerType @default(owner)
+    name   String?
+    phone  String
+    email  String?
+    type   OwnerType @default(owner)
 
     properties Property[]
 }
