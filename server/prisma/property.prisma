@@ -1,0 +1,109 @@
+//Property Model
+
+model Property {
+    id           Int          @id @default(autoincrement())
+    title        String
+    description  String
+    propertyType PropertyType
+    listingType  ListingType
+    price        Float
+
+    //Address
+    street  String?
+    area    String?
+    city    String
+    state   String
+    country String  @default("India")
+    zipCode String?
+
+    //Location Geo
+    latitude  Float?
+    longitude Float?
+
+    //Specification
+    bedrooms    Int?
+    bathrooms   Int?
+    areaSize    Int?
+    furnished   FurnishedType?
+    parking     Int?
+    floor       Int?
+    totalFloors Int?
+
+    //Relation
+    images  Image[]
+    owner   Owner   @relation(fields: [ownerId], references: [id])
+    ownerId Int
+}
+
+//Enums
+
+enum PropertyType {
+    house
+    apartment
+    villa
+    land
+    commercial
+    office
+}
+
+enum ListingType {
+    rent
+    sale
+}
+
+enum FurnishedType {
+    fully_furnished
+    semi_furnished
+    unfurnished
+}
+
+enum OwnerType {
+    owner
+    agent
+    builder
+}
+
+enum PropertyStatus {
+    active
+    sold
+    rented
+    pending
+    inactive
+}
+
+enum Amenity {
+    gym
+    pool
+    garden
+    security
+    lift
+    power_backup
+    internet
+    air_conditioning
+    heating
+    balcony
+    terrace
+}
+
+//Model Image
+model Image {
+    id        Int     @id @default(autoincrement())
+    url       String
+    publicId  String
+    isPrimary Boolean @default(false)
+
+    property   Property @relation(fields: [propertyId], references: [id])
+    propertyId Int
+}
+
+//Owner Model
+model Owner {
+    id Int @id @default(autoincrement())
+    userId Int
+    name String?
+    phone String
+    email String?
+    type OwnerType @default(owner)
+
+    properties Property[]
+}
