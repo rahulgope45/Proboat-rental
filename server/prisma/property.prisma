@@ -40,6 +40,9 @@ model Property {
     @@index([price])
     @@index([city,state])
     @@index([propertyType,listingType])
+
+    //Relation of Review
+    reviews Review[]
     
 }
 
