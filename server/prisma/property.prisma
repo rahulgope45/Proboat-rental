@@ -33,6 +33,14 @@ model Property {
     images  Image[]
     owner   Owner   @relation(fields: [ownerId], references: [id])
     ownerId Int
+
+
+    //Indexes
+
+    @@index([price])
+    @@index([city,state])
+    @@index([propertyType,listingType])
+    
 }
 
 //Enums
